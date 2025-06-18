@@ -46,11 +46,25 @@
             }
         };
 
+        let selectedDay = 0;
+        let storedCoords = null;
+
         document.addEventListener("DOMContentLoaded", function() {
             document.querySelectorAll('[data-translate]').forEach(element => {
                 element.setAttribute('data-original-text', element.textContent);
             });
-            // Switch to English immediately on load
+
+            const savedLocation = localStorage.getItem('lastLocation');
+            if (savedLocation) {
+                document.getElementById('location').value = savedLocation;
+            }
+            const coords = localStorage.getItem('lastCoords');
+            if (coords) {
+                storedCoords = JSON.parse(coords);
+            }
+
+            createDayCards();
+
             switchLanguage('en');
             fetchWeather();
         });
@@ -71,7 +85,7 @@
                 }
             });
 
-            updateDaySelector(lang);
+            updateDayCards(lang);
             
             // Only try to update banner if there's weather data
             const bannerText = document.getElementById('weather-banner').textContent;
@@ -87,25 +101,12 @@
             updateAdvancedButtonText();
         }
 
-        function updateDaySelector(lang) {
-            const daySelector = document.getElementById('day-selector');
-            const options = daySelector.options;
-
-            for (let i = 0; i < options.length; i++) {
-                const value = options[i].value;
-                if (lang === 'en' && translations.en.daySelector[value]) {
-                    options[i].text = translations.en.daySelector[value];
-                } else {
-                    // Revert to Italian
-                    const italianTexts = [
-                        "7 Giorni Prima", "6 Giorni Prima", "5 Giorni Prima", "4 Giorni Prima",
-                        "3 Giorni Prima", "2 Giorni Prima", "Ieri", "Oggi", "Domani",
-                        "2 Giorni Dopo", "3 Giorni Dopo", "4 Giorni Dopo", "5 Giorni Dopo",
-                        "6 Giorni Dopo", "7 Giorni Dopo"
-                    ];
-                    options[i].text = italianTexts[i];
-                }
-            }
+        function updateDayCards(lang) {
+            document.querySelectorAll('#day-cards .day-card').forEach(card => {
+                const day = card.getAttribute('data-day');
+                const text = lang === 'en' ? translations.en.daySelector[day] : card.getAttribute('data-original-text');
+                card.textContent = text;
+            });
         }
 
         function updateAdvancedButtonText() {
@@ -119,26 +120,67 @@
             }
         }
 
-        function fetchWeather() {
+        function createDayCards() {
+            const container = document.getElementById('day-cards');
+            const values = [-7,-6,-5,-4,-3,-2,-1,0,1,2,3,4,5,6,7];
+            const italianTexts = [
+                "7 Giorni Prima","6 Giorni Prima","5 Giorni Prima","4 Giorni Prima",
+                "3 Giorni Prima","2 Giorni Prima","Ieri","Oggi","Domani",
+                "2 Giorni Dopo","3 Giorni Dopo","4 Giorni Dopo","5 Giorni Dopo",
+                "6 Giorni Dopo","7 Giorni Dopo"
+            ];
+            container.innerHTML = '';
+            values.forEach((v, idx) => {
+                const card = document.createElement('div');
+                card.className = 'day-card rounded-xl px-3 py-2 bg-white/20 cursor-pointer snap-center';
+                card.setAttribute('data-day', v);
+                card.setAttribute('data-original-text', italianTexts[idx]);
+                card.textContent = translations.en.daySelector[v];
+                card.addEventListener('click', () => {
+                    selectedDay = parseInt(v);
+                    document.querySelectorAll('#day-cards .day-card').forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    fetchWeather(storedCoords ? storedCoords.lat : undefined, storedCoords ? storedCoords.lon : undefined);
+                });
+                if (v === 0) card.classList.add('selected');
+                container.appendChild(card);
+            });
+        }
+
+        function fetchWeather(lat, lon) {
             const locationInput = document.getElementById('location').value || 'Rome';
-            const dayOffset = parseInt(document.getElementById('day-selector').value);
+            const dayOffset = selectedDay;
             const currentDate = new Date();
             currentDate.setDate(currentDate.getDate() + dayOffset);
             const formattedDate = currentDate.toISOString().split('T')[0];
 
-            fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationInput)}&count=1&language=it&format=json`)
-                .then(response => response.json())
-                .then(geoData => {
-                    if (geoData.results && geoData.results.length > 0) {
-                        const { latitude, longitude } = geoData.results[0];
-                        const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,relativehumidity_2m,precipitation_probability,weathercode,surface_pressure,visibility,windspeed_10m,uv_index&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_hours,windspeed_10m_max,windgusts_10m_max,uv_index_max,rain_sum,showers_sum,snowfall_sum&current_weather=true&timezone=auto&start_date=${formattedDate}&end_date=${formattedDate}`;
-                        
-                        return fetch(url);
-                    } else {
+            document.getElementById('weather-banner').textContent = 'Loading weather conditions...';
+
+            const requestWeather = (latitude, longitude) => {
+                const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,relativehumidity_2m,precipitation_probability,weathercode,surface_pressure,visibility,windspeed_10m,uv_index&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_hours,windspeed_10m_max,windgusts_10m_max,uv_index_max,rain_sum,showers_sum,snowfall_sum&current_weather=true&timezone=auto&start_date=${formattedDate}&end_date=${formattedDate}`;
+                return fetch(url).then(r => r.json());
+            };
+
+            const getCoords = () => {
+                return fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(locationInput)}&count=1&language=it&format=json`)
+                    .then(r => r.json())
+                    .then(geoData => {
+                        if (geoData.results && geoData.results.length > 0) {
+                            return { latitude: geoData.results[0].latitude, longitude: geoData.results[0].longitude };
+                        }
                         throw new Error('Location not found');
-                    }
+                    });
+            };
+
+            const coordPromise = lat && lon ? Promise.resolve({ latitude: lat, longitude: lon }) : getCoords();
+
+            coordPromise
+                .then(coords => {
+                    storedCoords = { lat: coords.latitude, lon: coords.longitude };
+                    localStorage.setItem('lastLocation', locationInput);
+                    localStorage.setItem('lastCoords', JSON.stringify(storedCoords));
+                    return requestWeather(coords.latitude, coords.longitude);
                 })
-                .then(response => response.json())
                 .then(data => {
                     const currentWeather = data.current_weather;
                     const dailyData = data.daily;
@@ -162,6 +204,27 @@
                     document.getElementById('showers-sum').textContent = `${dailyData.showers_sum[0]} mm`;
                     document.getElementById('snowfall-sum').textContent = `${dailyData.snowfall_sum[0]} cm`;
                     document.getElementById('windgusts').textContent = `${dailyData.windgusts_10m_max[0]} km/h`;
+
+                    const hourlyContainer = document.getElementById('hourly-forecast');
+                    const hourDetails = document.getElementById('hour-details');
+                    hourlyContainer.innerHTML = '';
+                    hourDetails.textContent = '';
+                    const interval = 3;
+                    for (let i = 0; i < hourlyData.time.length; i += interval) {
+                        const card = document.createElement('div');
+                        card.className = 'day-card rounded-xl px-3 py-2 bg-white/20 cursor-pointer snap-center';
+                        card.innerHTML = `<span class="text-sm">${hourlyData.time[i].split('T')[1].slice(0,5)}</span><span>${hourlyData.temperature_2m[i]}°C</span>`;
+                        card.addEventListener('click', () => {
+                            document.querySelectorAll('#hourly-forecast .day-card').forEach(c => c.classList.remove('selected'));
+                            card.classList.add('selected');
+                            hourDetails.innerHTML = `Humidity: ${hourlyData.relativehumidity_2m[i]}% - Precip: ${hourlyData.precipitation_probability[i]}%`;
+                        });
+                        if (i === 0) {
+                            card.classList.add('selected');
+                            hourDetails.innerHTML = `Humidity: ${hourlyData.relativehumidity_2m[i]}% - Precip: ${hourlyData.precipitation_probability[i]}%`;
+                        }
+                        hourlyContainer.appendChild(card);
+                    }
 
                     updateBanner(getWeatherCondition(currentWeather.weathercode));
                 })
@@ -303,4 +366,16 @@
             const advancedSection = document.querySelector('.advanced-weather-info');
             advancedSection.style.display = advancedSection.style.display === 'none' ? 'grid' : 'none';
             updateAdvancedButtonText();
+        }
+
+        function useCurrentLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(pos => {
+                    fetchWeather(pos.coords.latitude, pos.coords.longitude);
+                }, () => {
+                    alert('Unable to retrieve your location');
+                });
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
         }
