@@ -4,30 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Weather Forecast</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="m-0 p-0 flex flex-col items-center text-white bg-gradient-to-b from-[#1e3c72] to-[#2a5298] font-[Roboto,Arial,sans-serif] min-h-screen">
     <div class="weather-background"></div>
-    <header>
-        <div class="language-tabs">
-            <button id="lang-it" class="lang-btn" onclick="switchLanguage('it')">
-                <img src="https://flagcdn.com/w20/it.png" alt="Italian flag" width="20" height="15">
+    <header class="w-full bg-blue-900 text-white p-5 text-center shadow relative">
+        <div class="language-tabs absolute top-2 left-0 flex gap-1 z-10 pl-[10%] md:pl-[10%] pl-[5%]">
+            <button id="lang-it" class="lang-btn bg-white/20 border border-white/30 rounded p-1 transition hover:bg-white/40 hover:scale-105" onclick="switchLanguage('it')">
+                <img src="https://flagcdn.com/w20/it.png" alt="Italian flag" width="20" height="15" class="block w-6 h-4 md:w-6 md:h-4"/>
             </button>
-            <button id="lang-en" class="lang-btn active" onclick="switchLanguage('en')">
-                <img src="https://flagcdn.com/w20/gb.png" alt="British flag" width="20" height="15">
+            <button id="lang-en" class="lang-btn active bg-white/20 border border-white/30 rounded p-1 transition hover:bg-white/40 hover:scale-105" onclick="switchLanguage('en')">
+                <img src="https://flagcdn.com/w20/gb.png" alt="British flag" width="20" height="15" class="block w-6 h-4 md:w-6 md:h-4"/>
             </button>
         </div>
-        <h1 data-translate="title" data-original-text="Weather Forecast">Weather Forecast</h1>
-        <svg id="weather-icon" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <h1 data-translate="title" data-original-text="Weather Forecast" class="text-3xl font-bold">Weather Forecast</h1>
+        <svg id="weather-icon" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="mt-5">
             <!-- Weather icon will be dynamically inserted here -->
         </svg>
     </header>
-    <div id="weather-banner" class="fade-in">Loading weather conditions...</div>
-    <main>
-        <section class="location-input">
-            <input type="text" id="location" placeholder="Enter location" aria-label="Enter location">
-            <select id="day-selector" aria-label="Select day">
+    <div id="weather-banner" class="fade-in w-full py-4 text-center text-lg">Loading weather conditions...</div>
+    <main class="flex flex-col items-center p-5 max-w-2xl w-11/12 gap-5">
+        <section class="location-input flex justify-center gap-2 mb-5">
+            <input type="text" id="location" placeholder="Enter location" aria-label="Enter location" class="p-2 text-black rounded border border-gray-300 focus:outline-none focus:border-cyan-500 focus:shadow" />
+            <select id="day-selector" aria-label="Select day" class="p-2 text-black rounded border border-gray-300 focus:outline-none focus:border-cyan-500 focus:shadow bg-white cursor-pointer">
                 <option value="-7">7 Days Ago</option>
                 <option value="-6">6 Days Ago</option>
                 <option value="-5">5 Days Ago</option>
@@ -35,7 +36,7 @@
                 <option value="-3">3 Days Ago</option>
                 <option value="-2">2 Days Ago</option>
                 <option value="-1">Yesterday</option>
-                <option value="0" selected="">Today</option>
+                <option value="0" selected>Today</option>
                 <option value="1">Tomorrow</option>
                 <option value="2">2 Days After</option>
                 <option value="3">3 Days After</option>
@@ -44,114 +45,115 @@
                 <option value="6">6 Days After</option>
                 <option value="7">7 Days After</option>
             </select>
-            <button onclick="fetchWeather()" aria-label="Update weather forecast">Update</button>
+            <button onclick="fetchWeather()" aria-label="Update weather forecast" class="p-2 px-4 bg-sky-600 text-white rounded hover:bg-sky-700 focus:outline-none focus:border-cyan-500 focus:shadow">Update</button>
         </section>
-        <section class="weather-info fade-in">
-            <div class="weather-item">
+        <section class="weather-info fade-in grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="date" data-original-text="Date and Time:">Date and Time:</span>
                 <span id="datetime">--</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="temperature" data-original-text="Temperature:">Temperature:</span>
                 <span id="temperature">-- °C</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="humidity" data-original-text="Humidity:">Humidity:</span>
                 <span id="humidity">--%</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="windSpeed" data-original-text="Wind Speed:">Wind Speed:</span>
                 <span id="wind-speed">-- km/h</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="precipitation" data-original-text="Precipitation:">Precipitation:</span>
                 <span id="precipitation">-- mm</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="uvIndex" data-original-text="UV Index:">UV Index:</span>
                 <span id="uv-index">--</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="sunrise" data-original-text="Sunrise:">Sunrise:</span>
                 <span id="sunrise">--:--</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="sunset" data-original-text="Sunset:">Sunset:</span>
                 <span id="sunset">--:--</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="visibility" data-original-text="Visibility:">Visibility:</span>
                 <span id="visibility">-- km</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="pressure" data-original-text="Pressure:">Pressure:</span>
                 <span id="pressure">-- hPa</span>
             </div>
-            <div class="weather-item" style="grid-column: 1 / -1;">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20 col-span-full">
                 <span data-translate="weatherAlerts" data-original-text="Weather Alerts:">Weather Alerts:</span>
                 <div id="alerts" data-original-text="No alerts">No alerts</div>
             </div>
         </section>
-        <section class="advanced-weather-info fade-in" style="display: none;">
-            <h2 data-translate="advancedDataTitle" data-original-text="Advanced Weather Data">Advanced Weather Data</h2>
-            <div class="weather-item">
+        <section class="advanced-weather-info fade-in grid grid-cols-1 sm:grid-cols-2 gap-4 w-full" style="display: none;">
+            <h2 data-translate="advancedDataTitle" data-original-text="Advanced Weather Data" class="text-2xl font-semibold col-span-full">Advanced Weather Data</h2>
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="precipitationProbability" data-original-text="Precipitation Probability:">Precipitation Probability:</span>
                 <span id="precipitation-probability">--%</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="precipitationHours" data-original-text="Precipitation Hours:">Precipitation Hours:</span>
                 <span id="precipitation-hours">-- hours</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="rain" data-original-text="Rain:">Rain:</span>
                 <span id="rain-sum">-- mm</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="showers" data-original-text="Showers:">Showers:</span>
                 <span id="showers-sum">-- mm</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="snowfall" data-original-text="Snowfall:">Snowfall:</span>
                 <span id="snowfall-sum">-- cm</span>
             </div>
-            <div class="weather-item">
+            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="windGusts" data-original-text="Wind Gusts:">Wind Gusts:</span>
                 <span id="windgusts">-- km/h</span>
             </div>
         </section>
-        <button id="toggle-advanced" onclick="toggleAdvancedInfo()" aria-label="Show/Hide advanced information">Advanced Information</button>
-        <section class="map-container fade-in">
+        <button id="toggle-advanced" onclick="toggleAdvancedInfo()" aria-label="Show/Hide advanced information" class="w-full py-4 text-lg bg-sky-600 text-white rounded-lg mt-5 transition hover:bg-sky-700">Advanced Information</button>
+        <section class="map-container fade-in mt-5 w-full h-72 rounded-lg overflow-hidden">
             <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
                 <rect width="100%" height="100%" fill="#cfd8dc"></rect>
                 <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#546e7a" font-size="24">Satellite Map Loading...</text>
             </svg>
         </section>
     </main>
-    <footer>
-        <div class="social-icons">
-            <a href="https://facebook.com" target="_blank" aria-label="Facebook">
+    <footer class="bg-white/10 p-5 mt-5 text-center border-t border-white/20">
+        <div class="social-icons flex justify-center gap-5 mb-4">
+            <a href="https://facebook.com" target="_blank" aria-label="Facebook" class="text-white hover:text-sky-600 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M18.77 7.46H14.5v-1.9c0-.9.6-1.1 1-1.1h3V.5h-4.33C10.24.5 9.5 3.44 9.5 5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4z"/>
                 </svg>
             </a>
-            <a href="https://twitter.com" target="_blank" aria-label="Twitter">
+            <a href="https://twitter.com" target="_blank" aria-label="Twitter" class="text-white hover:text-sky-600 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M23.44 4.83c-.8.37-1.5.38-2.22.02.93-.56.98-.96 1.32-2.02-.88.52-1.86.9-2.9 1.1-.82-.88-2-1.43-3.3-1.43-2.5 0-4.55 2.04-4.55 4.54 0 .36.03.7.1 1.04-3.77-.2-7.12-2-9.36-4.75-.4.67-.6 1.45-.6 2.3 0 1.56.8 2.95 2 3.77-.74-.03-1.44-.23-2.05-.57v.06c0 2.2 1.56 4.03 3.64 4.44-.67.2-1.37.2-2.06.08.58 1.8 2.26 3.12 4.25 3.16C5.78 18.1 3.37 18.74 1 18.46c2 1.3 4.4 2.04 6.97 2.04 8.35 0 12.92-6.92 12.92-12.93 0-.2 0-.4-.02-.6.9-.63 1.96-1.22 2.56-2.14z"/>
                 </svg>
             </a>
-            <a href="https://instagram.com" target="_blank" aria-label="Instagram">
+            <a href="https://instagram.com" target="_blank" aria-label="Instagram" class="text-white hover:text-sky-600 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
                 </svg>
             </a>
         </div>
-        <div class="footer-links">
-            <a href="/privacy" data-translate="privacy">Privacy</a>
-            <a href="/terms" data-translate="terms">Terms</a>
+        <div class="footer-links mb-4">
+            <a href="/privacy" data-translate="privacy" class="mx-2 text-white hover:text-sky-600 transition no-underline">Privacy</a>
+            <a href="/terms" data-translate="terms" class="mx-2 text-white hover:text-sky-600 transition no-underline">Terms</a>
         </div>
-        <div class="copyright">
+        <div class="copyright text-sm text-white/70">
             © 2024 Created by Mauro Col (AIZero), All rights reserved
         </div>
     </footer>
     <script src="script.js"></script>
-</body></html>
+</body>
+</html>
