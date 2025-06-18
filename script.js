@@ -231,6 +231,8 @@
                 .catch(error => {
                     console.error('Error fetching data:', error);
                     alert('Unable to retrieve weather data. Check the connection or input parameters.');
+                    document.getElementById('weather-banner').textContent =
+                        'Unable to retrieve weather data.';
                 });
         }
 
