@@ -20,7 +20,7 @@
             </button>
         </div>
         <h1 data-translate="title" data-original-text="Weather Forecast" class="text-3xl font-bold">Weather Forecast</h1>
-        <svg id="weather-icon" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="mt-5">
+        <svg id="weather-icon" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" class="mt-5 mx-auto">
             <!-- Weather icon will be dynamically inserted here -->
         </svg>
     </header>
@@ -47,7 +47,7 @@
             </select>
             <button onclick="fetchWeather()" aria-label="Update weather forecast" class="p-2 px-4 bg-sky-600 text-white rounded hover:bg-sky-700 focus:outline-none focus:border-cyan-500 focus:shadow">Update</button>
         </section>
-        <section class="weather-info fade-in grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+        <section class="weather-info fade-in grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mx-auto">
             <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="date" data-original-text="Date and Time:">Date and Time:</span>
                 <span id="datetime">--</span>
@@ -93,7 +93,7 @@
                 <div id="alerts" data-original-text="No alerts">No alerts</div>
             </div>
         </section>
-        <section class="advanced-weather-info fade-in grid grid-cols-1 sm:grid-cols-2 gap-4 w-full" style="display: none;">
+        <section class="advanced-weather-info fade-in grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mx-auto" style="display: none;">
             <h2 data-translate="advancedDataTitle" data-original-text="Advanced Weather Data" class="text-2xl font-semibold col-span-full">Advanced Weather Data</h2>
             <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
                 <span data-translate="precipitationProbability" data-original-text="Precipitation Probability:">Precipitation Probability:</span>
