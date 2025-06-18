@@ -97,7 +97,8 @@
             }
 
             document.getElementById('location').placeholder = lang === 'en' ? translations.en.locationPlaceholder : "Inserisci la località";
-            document.querySelector('.location-input button').textContent = lang === 'en' ? translations.en.updateButton : "Aggiorna";
+            document.getElementById('update-btn').textContent =
+                lang === 'en' ? translations.en.updateButton : 'Aggiorna';
             updateAdvancedButtonText();
         }
 
