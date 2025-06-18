@@ -30,7 +30,7 @@
             <button id="gps-btn" aria-label="Use GPS" onclick="useCurrentLocation()" class="p-2 bg-sky-600 text-white rounded-full hover:bg-sky-700 focus:outline-none">📍</button>
             <input type="text" id="location" placeholder="Enter location" aria-label="Enter location" class="p-2 text-black rounded border border-gray-300 focus:outline-none focus:border-cyan-500 focus:shadow" />
             <div id="day-cards" class="flex overflow-x-auto gap-2 snap-x"></div>
-            <button onclick="fetchWeather()" aria-label="Update weather forecast" class="p-2 px-4 bg-sky-600 text-white rounded-xl hover:bg-sky-700 focus:outline-none focus:border-cyan-500 focus:shadow">Update</button>
+            <button id="update-btn" onclick="fetchWeather()" aria-label="Update weather forecast" class="p-2 px-4 bg-sky-600 text-white rounded-xl hover:bg-sky-700 focus:outline-none focus:border-cyan-500 focus:shadow">Update</button>
         </section>
         <section class="weather-info fade-in grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mx-auto">
             <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
