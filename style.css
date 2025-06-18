@@ -64,3 +64,12 @@ body {
 }
 .fade-in { animation: fadeIn 2s ease-in; }
 
+.day-card.selected {
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.weather-item {
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
