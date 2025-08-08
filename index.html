@@ -9,15 +9,16 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="m-0 p-0 flex flex-col items-center text-white bg-gradient-to-b from-[#1e3c72] to-[#2a5298] font-[Roboto,Arial,sans-serif] min-h-screen">
-
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
     <div class="weather-background"></div>
     <header class="w-full bg-blue-900 text-white p-5 text-center shadow relative">
         <div class="language-tabs absolute top-2 left-0 flex gap-1 z-10 pl-[5%] md:pl-[10%]">
-            <button id="lang-it" class="lang-btn bg-white/20 border border-white/30 rounded p-1 transition hover:bg-white/40 hover:scale-105" onclick="switchLanguage('it')">
+            <button id="lang-it" class="lang-btn bg-white/20 border border-white/30 rounded p-1 transition hover:bg-white/40 hover:scale-105">
                 <img src="https://flagcdn.com/w20/it.png" alt="Italian flag" width="20" height="15" class="block w-6 h-4 md:w-6 md:h-4"/>
             </button>
-            <button id="lang-en" class="lang-btn active bg-white/20 border border-white/30 rounded p-1 transition hover:bg-white/40 hover:scale-105" onclick="switchLanguage('en')">
-
+            <button id="lang-en" class="lang-btn active bg-white/20 border border-white/30 rounded p-1 transition hover:bg-white/40 hover:scale-105">
                 <img src="https://flagcdn.com/w20/gb.png" alt="British flag" width="20" height="15" class="block w-6 h-4 md:w-6 md:h-4"/>
             </button>
         </div>
@@ -27,99 +28,35 @@
         </svg>
     </header>
     <div id="weather-banner" class="fade-in w-full py-4 text-center text-lg">Loading weather conditions...</div>
-
-    <main class="flex flex-col items-center p-5 max-w-2xl w-11/12 gap-5">
-        <section class="location-input flex flex-wrap items-center gap-2 mb-5">
-            <button id="gps-btn" aria-label="Use GPS" onclick="useCurrentLocation()" class="p-2 bg-sky-600 text-white rounded-full hover:bg-sky-700 focus:outline-none">📍</button>
-            <input type="text" id="location" placeholder="Enter location" aria-label="Enter location" class="p-2 text-black rounded border border-gray-300 focus:outline-none focus:border-cyan-500 focus:shadow" />
-            <div id="day-cards" class="flex flex-wrap justify-center gap-2"></div>
-            <div id="hourly-forecast" class="flex overflow-x-auto gap-3 snap-x"></div>
-            <div id="hour-details" class="text-center"></div>
-            <button id="update-btn" onclick="fetchWeather()" aria-label="Update weather forecast" class="p-2 px-4 bg-sky-600 text-white rounded-xl hover:bg-sky-700 focus:outline-none focus:border-cyan-500 focus:shadow">Update</button>
+    <main class="flex flex-col items-center p-5 max-w-4xl w-11/12 gap-5">
+        <section class="location-input flex flex-wrap items-center justify-center gap-2 mb-5 w-full">
+            <button id="gps-btn" aria-label="Use GPS" class="p-2 bg-sky-600 text-white rounded-full hover:bg-sky-700 focus:outline-none">📍</button>
+            <div class="autocomplete-container relative flex-grow">
+                <input type="text" id="location" placeholder="Enter location" aria-label="Enter location" class="p-2 text-black rounded border border-gray-300 focus:outline-none focus:border-cyan-500 focus:shadow w-full" autocomplete="off">
+                <div class="suggestions-container" id="suggestions-container"></div>
+            </div>
+            <select id="day-selector" aria-label="Select day" class="p-2 text-black rounded border border-gray-300 focus:outline-none focus:border-cyan-500 focus:shadow">
+                <!-- Options will be populated by JS -->
+            </select>
+            <button id="update-btn" aria-label="Update weather forecast" class="p-2 px-4 bg-sky-600 text-white rounded-xl hover:bg-sky-700 focus:outline-none focus:border-cyan-500 focus:shadow">Update</button>
         </section>
-        <section class="weather-info fade-in grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mx-auto">
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="date" data-original-text="Date and Time:">Date and Time:</span>
-                <span id="datetime">--</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="temperature" data-original-text="Temperature:">Temperature:</span>
-                <span id="temperature">-- °C</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="humidity" data-original-text="Humidity:">Humidity:</span>
-                <span id="humidity">--%</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="windSpeed" data-original-text="Wind Speed:">Wind Speed:</span>
-                <span id="wind-speed">-- km/h</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="precipitation" data-original-text="Precipitation:">Precipitation:</span>
-                <span id="precipitation">-- mm</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="uvIndex" data-original-text="UV Index:">UV Index:</span>
-                <span id="uv-index">--</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="sunrise" data-original-text="Sunrise:">Sunrise:</span>
-                <span id="sunrise">--:--</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="sunset" data-original-text="Sunset:">Sunset:</span>
-                <span id="sunset">--:--</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="visibility" data-original-text="Visibility:">Visibility:</span>
-                <span id="visibility">-- km</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="pressure" data-original-text="Pressure:">Pressure:</span>
-                <span id="pressure">-- hPa</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20 col-span-full">
-                <span data-translate="weatherAlerts" data-original-text="Weather Alerts:">Weather Alerts:</span>
-                <div id="alerts" data-original-text="No alerts">No alerts</div>
-            </div>
+        <section class="hourly-forecast w-full">
+            <h2 data-translate="hourlyForecastTitle" data-original-text="Hourly Forecast" class="text-2xl font-semibold text-center mb-4">Hourly Forecast</h2>
+            <div id="hourly-container" class="hourly-container flex overflow-x-auto gap-3 snap-x p-2"></div>
         </section>
-        <section class="advanced-weather-info fade-in grid grid-cols-1 sm:grid-cols-2 gap-4 w-full mx-auto" style="display: none;">
+        <section class="weather-info fade-in grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full mx-auto">
+            <!-- Weather items will be populated by JS -->
+        </section>
+        <section class="advanced-weather-info fade-in grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 w-full mx-auto" style="display: none;">
             <h2 data-translate="advancedDataTitle" data-original-text="Advanced Weather Data" class="text-2xl font-semibold col-span-full">Advanced Weather Data</h2>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="precipitationProbability" data-original-text="Precipitation Probability:">Precipitation Probability:</span>
-                <span id="precipitation-probability">--%</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="precipitationHours" data-original-text="Precipitation Hours:">Precipitation Hours:</span>
-                <span id="precipitation-hours">-- hours</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="rain" data-original-text="Rain:">Rain:</span>
-                <span id="rain-sum">-- mm</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="showers" data-original-text="Showers:">Showers:</span>
-                <span id="showers-sum">-- mm</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="snowfall" data-original-text="Snowfall:">Snowfall:</span>
-                <span id="snowfall-sum">-- cm</span>
-            </div>
-            <div class="weather-item flex flex-col justify-between bg-white/10 p-5 rounded-lg shadow transition hover:-translate-y-1 hover:bg-white/20">
-                <span data-translate="windGusts" data-original-text="Wind Gusts:">Wind Gusts:</span>
-                <span id="windgusts">-- km/h</span>
-            </div>
+            <!-- Advanced weather items will be populated by JS -->
         </section>
-        <button id="toggle-advanced" onclick="toggleAdvancedInfo()" aria-label="Show/Hide advanced information" class="w-full py-4 text-lg bg-sky-600 text-white rounded-lg mt-5 transition hover:bg-sky-700">Advanced Information</button>
+        <button id="toggle-advanced" aria-label="Show/Hide advanced information" class="w-full py-4 text-lg bg-sky-600 text-white rounded-lg mt-5 transition hover:bg-sky-700">Advanced Information</button>
         <section class="map-container fade-in mt-5 w-full h-72 rounded-lg overflow-hidden">
-            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#cfd8dc"></rect>
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#546e7a" font-size="24">Satellite Map Loading...</text>
-            </svg>
+            <img id="map-image" src="" alt="Location Map" style="width: 100%; height: 100%; object-fit: cover;">
         </section>
     </main>
-    <footer class="bg-white/10 p-5 mt-5 text-center border-t border-white/20">
-
+    <footer class="bg-white/10 p-5 mt-5 text-center border-t border-white/20 w-full">
         <div class="social-icons flex justify-center gap-5 mb-4">
             <a href="https://facebook.com" target="_blank" aria-label="Facebook" class="text-white hover:text-sky-600 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
