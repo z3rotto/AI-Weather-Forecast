@@ -52,7 +52,7 @@ def run():
         expect(page.locator('[data-translate="temperature"]')).to_contain_text('Temperatura: 🌡️')
 
         # 9. Take a screenshot of the final state.
-        page.screenshot(path='jules-scratch/verification/verification_all.png')
+        page.screenshot(path='jules-scratch/verification/verification_all_final.png')
 
         browser.close()
 
