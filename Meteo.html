@@ -782,9 +782,9 @@
                 this.dom.suggestionsContainer.addEventListener('click', (e) => {
                     const suggestion = e.target.closest('.suggestion-item');
                     if (suggestion) {
-                        this.dom.locationInput.value = suggestion.textContent;
+                        this.dom.locationInput.value = suggestion.dataset.cityName;
                         this.dom.suggestionsContainer.innerHTML = '';
-                        this.fetchWeather();
+                        this.fetchWeather(suggestion.dataset.locationName);
                     }
                 });
             },
@@ -803,7 +803,10 @@
                         if (data.results) {
                             data.results.forEach(city => {
                                 const div = document.createElement('div');
-                                div.textContent = `${city.name}, ${city.country}`;
+                                const locationName = `${city.name}, ${city.country}`;
+                                div.textContent = `${city.name}, ${city.admin1 || ''}, ${city.country}`.replace(/, ,/g, ',');
+                                div.dataset.locationName = locationName;
+                                div.dataset.cityName = city.name;
                                 div.className = 'suggestion-item';
                                 this.dom.suggestionsContainer.appendChild(div);
                             });
@@ -870,9 +873,9 @@
                 this.dom.loadingOverlay.style.display = 'none';
             },
 
-            fetchWeather() {
+            fetchWeather(locationOverride) {
                 this.showLoading();
-                const location = this.dom.locationInput.value || 'Rome';
+                const location = locationOverride || this.dom.locationInput.value || 'Rome';
                 if(location) {
                     localStorage.setItem('weatherLocation', location);
                 }
