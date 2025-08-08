@@ -1003,7 +1003,7 @@
                 };
                 return emojiMap[condition] || '🤷';
             },
-            
+
             getWeatherCondition(code) {
                 const conditions = {
                     0: 'Sunny', 1: 'Slightly Cloudy', 2: 'Partly Cloudy', 3: 'Cloudy', 45: 'Foggy', 48: 'Foggy',
@@ -1021,7 +1021,7 @@
                 };
                 return translations[condition] || 'Condizioni Variabili';
             },
-            
+
             updateBanner(condition) {
                 const banner = this.dom.weatherBanner;
                 const background = document.querySelector('.weather-background');
