@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="m-0 p-0 flex flex-col items-center text-white bg-gradient-to-b from-[#1e3c72] to-[#2a5298] font-[Roboto,Arial,sans-serif] min-h-screen">
+
     <div class="weather-background"></div>
     <header class="w-full bg-blue-900 text-white p-5 text-center shadow relative">
         <div class="language-tabs absolute top-2 left-0 flex gap-1 z-10 pl-[5%] md:pl-[10%]">
@@ -16,6 +17,7 @@
                 <img src="https://flagcdn.com/w20/it.png" alt="Italian flag" width="20" height="15" class="block w-6 h-4 md:w-6 md:h-4"/>
             </button>
             <button id="lang-en" class="lang-btn active bg-white/20 border border-white/30 rounded p-1 transition hover:bg-white/40 hover:scale-105" onclick="switchLanguage('en')">
+
                 <img src="https://flagcdn.com/w20/gb.png" alt="British flag" width="20" height="15" class="block w-6 h-4 md:w-6 md:h-4"/>
             </button>
         </div>
@@ -25,6 +27,7 @@
         </svg>
     </header>
     <div id="weather-banner" class="fade-in w-full py-4 text-center text-lg">Loading weather conditions...</div>
+
     <main class="flex flex-col items-center p-5 max-w-2xl w-11/12 gap-5">
         <section class="location-input flex flex-wrap items-center gap-2 mb-5">
             <button id="gps-btn" aria-label="Use GPS" onclick="useCurrentLocation()" class="p-2 bg-sky-600 text-white rounded-full hover:bg-sky-700 focus:outline-none">📍</button>
@@ -116,6 +119,7 @@
         </section>
     </main>
     <footer class="bg-white/10 p-5 mt-5 text-center border-t border-white/20">
+
         <div class="social-icons flex justify-center gap-5 mb-4">
             <a href="https://facebook.com" target="_blank" aria-label="Facebook" class="text-white hover:text-sky-600 transition">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">

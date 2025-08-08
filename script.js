@@ -69,9 +69,6 @@
             fetchWeather();
         });
 
-/*************  ✨ Codeium Command ⭐  *************/
-        /**
-/******  cd9895a7-a295-48be-bacf-b621d6eda4e2  *******/
         function switchLanguage(lang) {
             document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
             document.getElementById(`lang-${lang}`).classList.add('active');
@@ -382,3 +379,4 @@
                 alert('Geolocation is not supported by this browser.');
             }
         }
+
