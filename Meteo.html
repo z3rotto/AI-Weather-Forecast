@@ -123,6 +123,13 @@
             width: 100%;
         }
 
+        @media (min-width: 1024px) {
+            .weather-info,
+            .advanced-weather-info {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
         .weather-item {
             display: flex;
             flex-direction: column;
@@ -167,6 +174,35 @@
             flex-wrap: wrap;
             justify-content: center;
             gap: 0.625rem;
+            position: relative;
+        }
+
+        .autocomplete-container {
+            position: relative;
+            flex: 1 1 12.5rem;
+        }
+
+        .suggestions-container {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background-color: #fff;
+            color: #333;
+            border-radius: 0 0 var(--border-radius) var(--border-radius);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            z-index: 1000;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .suggestion-item {
+            padding: 0.75rem;
+            cursor: pointer;
+        }
+
+        .suggestion-item:hover {
+            background-color: #f0f0f0;
         }
 
         .location-input input,
@@ -342,14 +378,38 @@
             font-size: 1.2rem;
         }
 
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            display: none; /* Hidden by default */
+        }
+
+        .spinner {
+            border: 8px solid #f3f3f3;
+            border-top: 8px solid var(--accent-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             h1 {
                 font-size: 1.8rem;
-            }
-
-            .language-tabs {
-                left: 2%;
             }
 
             .location-input {
@@ -365,6 +425,7 @@
 
             header {
                 padding: 1rem;
+                padding-top: 4rem;
             }
 
             h1 {
@@ -372,10 +433,10 @@
             }
 
             .language-tabs {
-                padding-left: 0;
+                top: 1rem;
                 left: 50%;
                 transform: translateX(-50%);
-                top: 0.3125rem;
+                width: max-content;
             }
 
             main {
@@ -391,6 +452,9 @@
     </style>
 </head>
 <body>
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
     <div class="weather-background"></div>
     <header>
         <div class="language-tabs">
@@ -409,7 +473,10 @@
     <div id="weather-banner" class="fade-in">Loading weather conditions...</div>
     <main>
         <section class="location-input">
-            <input type="text" id="location" placeholder="Enter location" aria-label="Enter location">
+            <div class="autocomplete-container">
+                <input type="text" id="location" placeholder="Enter location" aria-label="Enter location" autocomplete="off">
+                <div class="suggestions-container" id="suggestions-container"></div>
+            </div>
             <select id="day-selector" aria-label="Select day">
                 <option value="-7">7 Days Ago</option>
                 <option value="-6">6 Days Ago</option>
@@ -510,10 +577,7 @@
         </section>
         <button id="toggle-advanced" aria-label="Show/Hide advanced information">Advanced Information</button>
         <section class="map-container fade-in">
-            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                <rect width="100%" height="100%" fill="#cfd8dc"></rect>
-                <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#546e7a" font-size="24">Satellite Map Loading...</text>
-            </svg>
+            <img id="map-image" src="" alt="Location Map" style="width: 100%; height: 100%; object-fit: cover;">
         </section>
     </main>
     <footer>
@@ -627,6 +691,41 @@
                         "2": "2 Days After", "3": "3 Days After", "4": "4 Days After", "5": "5 Days After",
                         "6": "6 Days After", "7": "7 Days After"
                     }
+                },
+                it: {
+                    title: "Previsioni Meteo 🌦️",
+                    hourlyForecastTitle: "Previsioni Orarie",
+                    locationPlaceholder: "Inserisci località",
+                    updateButton: "Aggiorna 🔄",
+                    advancedInfoButton: "Informazioni Avanzate",
+                    hideAdvancedInfoButton: "Nascondi Informazioni Avanzate",
+                    date: "Data e Ora:",
+                    temperature: "Temperatura: 🌡️",
+                    humidity: "Umidità: 💧",
+                    windSpeed: "Velocità del Vento: 💨",
+                    precipitation: "Precipitazioni: 🌧️",
+                    uvIndex: "Indice UV: ☀️",
+                    sunrise: "Alba: 🌅",
+                    sunset: "Tramonto: 🌇",
+                    visibility: "Visibilità: 👁️",
+                    pressure: "Pressione: 📈",
+                    weatherAlerts: "Allerte Meteo: ⚠️",
+                    noAlerts: "Nessuna allerta",
+                    advancedDataTitle: "Dati Meteo Avanzati",
+                    precipitationProbability: "Probabilità di Precipitazioni: 확률",
+                    precipitationHours: "Ore di Precipitazione: 🕒",
+                    rain: "Pioggia: ☔",
+                    showers: "Rovesci: 🚿",
+                    snowfall: "Nevicata: ❄️",
+                    windGusts: "Raffiche di Vento: 🌬️",
+                    privacy: "Privacy",
+                    terms: "Termini",
+                    daySelector: {
+                        "-7": "7 Giorni Fa", "-6": "6 Giorni Fa", "-5": "5 Giorni Fa", "-4": "4 Giorni Fa",
+                        "-3": "3 Giorni Fa", "-2": "2 Giorni Fa", "-1": "Ieri", "0": "Oggi", "1": "Domani",
+                        "2": "2 Giorni Dopo", "3": "3 Giorni Dopo", "4": "4 Giorni Dopo", "5": "5 Giorni Dopo",
+                        "6": "6 Giorni Dopo", "7": "7 Giorni Dopo"
+                    }
                 }
             },
 
@@ -635,7 +734,15 @@
                     this.cacheDOMElements();
                     this.addEventListeners();
                     this.prepareTranslations();
-                    this.switchLanguage('en');
+
+                    const savedLang = localStorage.getItem('weatherLang') || 'en';
+                    this.switchLanguage(savedLang);
+
+                    const savedLocation = localStorage.getItem('weatherLocation');
+                    if (savedLocation) {
+                        this.dom.locationInput.value = savedLocation;
+                    }
+
                     this.fetchWeather();
                 });
             },
@@ -651,7 +758,10 @@
                     advancedSection: document.querySelector('.advanced-weather-info'),
                     weatherBanner: document.getElementById('weather-banner'),
                     weatherIcon: document.getElementById('weather-icon'),
-                    hourlyContainer: document.getElementById('hourly-container')
+                    hourlyContainer: document.getElementById('hourly-container'),
+                    mapImage: document.getElementById('map-image'),
+                    suggestionsContainer: document.getElementById('suggestions-container'),
+                    loadingOverlay: document.getElementById('loading-overlay')
                 };
             },
 
@@ -667,6 +777,38 @@
                         this.updateMainDisplay(card.dataset.hourIndex);
                     }
                 });
+
+                this.dom.locationInput.addEventListener('input', () => this.fetchCitySuggestions());
+                this.dom.suggestionsContainer.addEventListener('click', (e) => {
+                    const suggestion = e.target.closest('.suggestion-item');
+                    if (suggestion) {
+                        this.dom.locationInput.value = suggestion.textContent;
+                        this.dom.suggestionsContainer.innerHTML = '';
+                        this.fetchWeather();
+                    }
+                });
+            },
+
+            fetchCitySuggestions() {
+                const query = this.dom.locationInput.value;
+                if (query.length < 3) {
+                    this.dom.suggestionsContainer.innerHTML = '';
+                    return;
+                }
+
+                fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`)
+                    .then(res => res.json())
+                    .then(data => {
+                        this.dom.suggestionsContainer.innerHTML = '';
+                        if (data.results) {
+                            data.results.forEach(city => {
+                                const div = document.createElement('div');
+                                div.textContent = `${city.name}, ${city.country}`;
+                                div.className = 'suggestion-item';
+                                this.dom.suggestionsContainer.appendChild(div);
+                            });
+                        }
+                    });
             },
 
             prepareTranslations() {
@@ -678,33 +820,34 @@
             switchLanguage(lang) {
                 this.dom.langButtons.forEach(btn => btn.classList.remove('active'));
                 document.getElementById(`lang-${lang}`).classList.add('active');
+                localStorage.setItem('weatherLang', lang);
+
+                const targetLang = this.translations[lang] || this.translations.en;
 
                 this.dom.translatableElements.forEach(el => {
                     const key = el.getAttribute('data-translate');
-                    el.textContent = (lang === 'en' && this.translations.en[key]) ? this.translations.en[key] : el.getAttribute('data-original-text');
+                    el.textContent = targetLang[key] || el.getAttribute('data-original-text');
                 });
 
                 this.updateDaySelector(lang);
 
                 const bannerText = this.dom.weatherBanner.textContent;
                 if (bannerText && bannerText.includes(':')) {
-                    const condition = bannerText.split(': ')[1];
+                    const condition = bannerText.split(': ')[1].split(' ')[0];
                     if (condition) this.updateBanner(condition);
                 }
 
-                this.dom.locationInput.placeholder = lang === 'en' ? this.translations.en.locationPlaceholder : "Inserisci la località";
-                this.dom.updateButton.textContent = lang === 'en' ? this.translations.en.updateButton : "Aggiorna";
+                this.dom.locationInput.placeholder = targetLang.locationPlaceholder;
+                this.dom.updateButton.textContent = targetLang.updateButton;
                 this.updateAdvancedButtonText();
             },
 
             updateDaySelector(lang) {
-                Array.from(this.dom.daySelector.options).forEach((option, i) => {
+                const targetLang = this.translations[lang] || this.translations.en;
+                Array.from(this.dom.daySelector.options).forEach((option) => {
                     const value = option.value;
-                    if (lang === 'en' && this.translations.en.daySelector[value]) {
-                        option.text = this.translations.en.daySelector[value];
-                    } else {
-                        const italianTexts = ["7 Giorni Prima", "6 Giorni Prima", "5 Giorni Prima", "4 Giorni Prima", "3 Giorni Prima", "2 Giorni Prima", "Ieri", "Oggi", "Domani", "2 Giorni Dopo", "3 Giorni Dopo", "4 Giorni Dopo", "5 Giorni Dopo", "6 Giorni Dopo", "7 Giorni Dopo"];
-                        option.text = italianTexts[i];
+                    if (targetLang.daySelector[value]) {
+                        option.text = targetLang.daySelector[value];
                     }
                 });
             },
@@ -719,8 +862,20 @@
                 }
             },
 
+            showLoading() {
+                this.dom.loadingOverlay.style.display = 'flex';
+            },
+
+            hideLoading() {
+                this.dom.loadingOverlay.style.display = 'none';
+            },
+
             fetchWeather() {
+                this.showLoading();
                 const location = this.dom.locationInput.value || 'Rome';
+                if(location) {
+                    localStorage.setItem('weatherLocation', location);
+                }
                 const dayOffset = parseInt(this.dom.daySelector.value);
                 const date = new Date();
                 date.setDate(date.getDate() + dayOffset);
@@ -742,14 +897,17 @@
                         console.error('Error fetching data:', error);
                         this.dom.weatherBanner.textContent = 'Failed to load weather data. Please try again.';
                         this.dom.weatherBanner.style.backgroundColor = 'red';
-                    });
+                    })
+                    .finally(() => this.hideLoading());
             },
 
             hourlyData: {},
+            locationData: {},
 
             updateUI(data, date) {
                 const { current_weather, daily, hourly } = data;
                 this.hourlyData = hourly;
+                this.locationData = { latitude: data.latitude, longitude: data.longitude };
 
                 document.getElementById('datetime').textContent = `${date}, ${current_weather.time.split('T')[1]}`;
                 document.getElementById('temperature').textContent = `${current_weather.temperature}°C`;
@@ -795,6 +953,7 @@
                 document.getElementById('pressure').textContent = `${hourData.pressure.toFixed(0)} hPa`;
 
                 this.updateBanner(this.getWeatherCondition(hourData.weathercode));
+                this.updateMap();
 
                 // Highlight active card
                 const allCards = this.dom.hourlyContainer.querySelectorAll('.hour-card');
@@ -927,6 +1086,24 @@
                 const isVisible = this.dom.advancedSection.style.display !== 'none';
                 this.dom.advancedSection.style.display = isVisible ? 'none' : 'grid';
                 this.updateAdvancedButtonText();
+            },
+
+            updateMap() {
+                if (this.locationData.latitude && this.locationData.longitude) {
+                    const { latitude, longitude } = this.locationData;
+                    const mapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${longitude-0.1},${latitude-0.1},${longitude+0.1},${latitude+0.1}&layer=mapnik&marker=${latitude},${longitude}`;
+
+                    // To avoid using an iframe for the embed, which might be blocked,
+                    // we will use a static image from a different provider that uses OpenStreetMap data.
+                    const staticMapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+ff0000(${longitude},${latitude})/${longitude},${latitude},9,0/800x600?access_token=pk.eyJ1IjoiYWl6ZXJvIiwiYSI6ImNreWVhZ3ZqazA0Z2gyb3A1dG5sY2J3aXAifQ.l-5_b5t_FMMb2u3NSp2g7g`;
+
+                    // Since we can't use Mapbox without an API key setup on the user side,
+                    // let's use a simpler static map provider that does not require a key for simple use cases.
+                    const finalMapUrl = `https://static-maps.yandex.ru/1.x/?ll=${longitude},${latitude}&z=10&l=map&size=600,450&pt=${longitude},${latitude},pm2rdl`;
+
+                    this.dom.mapImage.src = finalMapUrl;
+                    this.dom.mapImage.alt = `Map of the selected location`;
+                }
             }
         };
 
