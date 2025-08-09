@@ -1,4 +1,6 @@
 const weatherApp = {
+    isDebug: false,
+
     translations: {
         en: {
             title: "Weather Forecast 🌦️",
@@ -73,24 +75,39 @@ const weatherApp = {
     },
 
     init() {
-        document.addEventListener("DOMContentLoaded", () => {
-            this.cacheDOMElements();
-            this.addEventListeners();
-            this.prepareTranslations();
-            this.populateDaySelector('en');
+        const urlParams = new URLSearchParams(window.location.search);
+        this.isDebug = urlParams.get('debug') === 'true';
 
-            const savedLang = localStorage.getItem('weatherLang') || 'en';
-            this.switchLanguage(savedLang);
+        this.cacheDOMElements();
+        this.addEventListeners();
+        this.prepareTranslations();
+        this.populateDaySelector('en');
 
-            const savedLocation = localStorage.getItem('weatherLocation');
-            if (savedLocation) {
-                this.dom.locationInput.value = savedLocation;
-            } else {
-                this.dom.locationInput.value = 'Rome';
-            }
+        if (this.isDebug) {
+            this.dom.debugContainer.style.display = 'block';
+        }
 
-            this.fetchWeather();
-        });
+        const savedLang = localStorage.getItem('weatherLang') || 'en';
+        this.switchLanguage(savedLang);
+
+        const savedLocation = localStorage.getItem('weatherLocation');
+        if (savedLocation) {
+            this.dom.locationInput.value = savedLocation;
+        } else {
+            this.dom.locationInput.value = 'Rome';
+        }
+
+        this.fetchWeather();
+    },
+
+    logDebug(message) {
+        if (this.isDebug) {
+            const logEntry = document.createElement('div');
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            this.dom.debugLog.appendChild(logEntry);
+            this.dom.debugLog.scrollTop = this.dom.debugLog.scrollHeight;
+        }
+        console.log(message);
     },
 
     cacheDOMElements() {
@@ -110,7 +127,12 @@ const weatherApp = {
             loadingOverlay: document.getElementById('loading-overlay'),
             gpsButton: document.getElementById('gps-btn'),
             weatherInfoContainer: document.querySelector('.weather-info'),
-            advancedWeatherInfoContainer: document.querySelector('.advanced-weather-info')
+            advancedWeatherInfoContainer: document.querySelector('.advanced-weather-info'),
+            debugContainer: document.getElementById('debug-container'),
+            debugLog: document.getElementById('debug-log'),
+            errorContainer: document.getElementById('error-container'),
+            technicalError: document.getElementById('technical-error'),
+            closeErrorBtn: document.getElementById('close-error-btn')
         };
     },
 
@@ -137,21 +159,38 @@ const weatherApp = {
             }
         });
         this.dom.gpsButton.addEventListener('click', () => this.useCurrentLocation());
+        this.dom.closeErrorBtn.addEventListener('click', () => this.hideError());
+    },
+
+    showError(error) {
+        this.logDebug(`Displaying error: ${error.message}`);
+        this.dom.technicalError.textContent = `Error: ${error.name}\nMessage: ${error.message}`;
+        this.dom.errorContainer.classList.remove('hidden');
+        this.dom.errorContainer.classList.add('flex');
+    },
+
+    hideError() {
+        this.dom.errorContainer.classList.add('hidden');
+        this.dom.errorContainer.classList.remove('flex');
     },
 
     async fetchWithRetry(url, options, retries = 3, delay = 1000) {
+        this.logDebug(`Fetching ${url} with retry...`);
         for (let i = 0; i < retries; i++) {
             try {
                 const response = await fetch(url, options);
                 if (!response.ok) {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                this.logDebug(`Fetch successful for ${url}`);
                 return response;
             } catch (error) {
+                this.logDebug(`Attempt ${i + 1} failed for ${url}. Retrying in ${delay}ms...`);
                 console.error(`Attempt ${i + 1} failed for ${url}. Retrying in ${delay}ms...`, error);
                 if (i < retries - 1) {
                     await new Promise(resolve => setTimeout(resolve, delay));
                 } else {
+                    this.logDebug(`Failed to fetch ${url} after ${retries} attempts.`);
                     throw error;
                 }
             }
@@ -160,6 +199,7 @@ const weatherApp = {
 
     fetchCitySuggestions() {
         const query = this.dom.locationInput.value;
+        this.logDebug(`Fetching city suggestions for "${query}"`);
         if (query.length < 3) {
             this.dom.suggestionsContainer.innerHTML = '';
             return;
@@ -168,6 +208,7 @@ const weatherApp = {
         this.fetchWithRetry(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`)
             .then(res => res.json())
             .then(data => {
+                this.logDebug(`Suggestions received: ${JSON.stringify(data)}`);
                 this.dom.suggestionsContainer.innerHTML = '';
                 if (data.results) {
                     data.results.forEach(city => {
@@ -182,7 +223,8 @@ const weatherApp = {
                 }
             })
             .catch(error => {
-                console.error('Error fetching city suggestions:', error);
+                this.logDebug(`Error fetching city suggestions: ${error.message}`);
+                this.showError(error);
             });
     },
 
@@ -252,6 +294,7 @@ const weatherApp = {
 
     fetchWeather(locationOverride) {
         this.showLoading();
+        this.logDebug(`Fetching weather for "${locationOverride || this.dom.locationInput.value}"`);
         const location = locationOverride || this.dom.locationInput.value || 'Rome';
         if(location) {
             localStorage.setItem('weatherLocation', location);
@@ -264,6 +307,7 @@ const weatherApp = {
         this.fetchWithRetry(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=it&format=json`)
             .then(res => res.json())
             .then(geoData => {
+                this.logDebug(`Geocoding data received: ${JSON.stringify(geoData)}`);
                 if (geoData.results && geoData.results.length > 0) {
                     const { latitude, longitude } = geoData.results[0];
                     const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,relativehumidity_2m,precipitation_probability,weathercode,surface_pressure,visibility,windspeed_10m,uv_index&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_hours,windspeed_10m_max,windgusts_10m_max,uv_index_max,rain_sum,showers_sum,snowfall_sum&current_weather=true&timezone=auto&start_date=${formattedDate}&end_date=${formattedDate}`;
@@ -272,11 +316,13 @@ const weatherApp = {
                 throw new Error('Location not found');
             })
             .then(res => res.json())
-            .then(data => this.updateUI(data, formattedDate))
+            .then(data => {
+                this.logDebug(`Weather data received: ${JSON.stringify(data)}`);
+                this.updateUI(data, formattedDate)
+            })
             .catch(error => {
-                console.error('Error fetching data:', error);
-                this.dom.weatherBanner.textContent = `Failed to load weather data. Error: ${error.message}. Please try again.`;
-                this.dom.weatherBanner.style.backgroundColor = 'red';
+                this.logDebug(`Error fetching data: ${error.message}`);
+                this.showError(error);
             })
             .finally(() => this.hideLoading());
     },
@@ -364,10 +410,13 @@ const weatherApp = {
             </div>
         `;
 
+        // Re-cache and prepare translatable elements
+        this.prepareTranslations();
+
         this.updateBanner(this.getWeatherCondition(current_weather.weathercode));
         this.displayHourlyForecast(hourly);
         this.updateMainDisplay(new Date().getHours());
-        this.prepareTranslations();
+
         const savedLang = localStorage.getItem('weatherLang') || 'en';
         this.switchLanguage(savedLang);
     },
@@ -570,12 +619,11 @@ const weatherApp = {
                     });
             })
             .catch(error => {
-                console.error('Error fetching data:', error);
-                this.dom.weatherBanner.textContent = 'Failed to load weather data. Please try again.';
-                this.dom.weatherBanner.style.backgroundColor = 'red';
+                this.logDebug(`Error fetching data by coords: ${error.message}`);
+                this.showError(error);
             })
             .finally(() => this.hideLoading());
     }
 };
 
-weatherApp.init();
+document.addEventListener("DOMContentLoaded", () => weatherApp.init());
