@@ -20,12 +20,12 @@ const weatherApp = {
             weatherAlerts: "Weather Alerts: ⚠️",
             noAlerts: "No alerts",
             advancedDataTitle: "Advanced Weather Data",
-            precipitationProbability: "Precipitation Probability:  확률",
-            precipitationHours: "Precipitation Hours: 🕒",
-            rain: "Rain: ☔",
-            showers: "Showers: 🚿",
-            snowfall: "Snowfall: ❄️",
-            windGusts: "Wind Gusts: 🌬️",
+            precipitationProbability: "Precipitation Probability",
+            precipitationHours: "Precipitation Hours",
+            rain: "Rain",
+            showers: "Showers",
+            snowfall: "Snowfall",
+            windGusts: "Wind Gusts",
             privacy: "Privacy",
             terms: "Terms",
             daySelector: {
@@ -43,24 +43,24 @@ const weatherApp = {
             advancedInfoButton: "Informazioni Avanzate",
             hideAdvancedInfoButton: "Nascondi Informazioni Avanzate",
             date: "Data e Ora:",
-            temperature: "Temperatura: 🌡️",
-            humidity: "Umidità: 💧",
-            windSpeed: "Velocità del Vento: 💨",
-            precipitation: "Precipitazioni: 🌧️",
-            uvIndex: "Indice UV: ☀️",
-            sunrise: "Alba: 🌅",
-            sunset: "Tramonto: 🌇",
-            visibility: "Visibilità: 👁️",
-            pressure: "Pressione: 📈",
-            weatherAlerts: "Allerte Meteo: ⚠️",
+            temperature: "Temperatura 🌡️",
+            humidity: "Umidità 💧",
+            windSpeed: "Velocità del Vento 💨",
+            precipitation: "Precipitazioni 🌧️",
+            uvIndex: "Indice UV ☀️",
+            sunrise: "Alba 🌅",
+            sunset: "Tramonto 🌇",
+            visibility: "Visibilità 👁️",
+            pressure: "Pressione 📈",
+            weatherAlerts: "Allerte Meteo ⚠️",
             noAlerts: "Nessuna allerta",
             advancedDataTitle: "Dati Meteo Avanzati",
-            precipitationProbability: "Probabilità di Precipitazioni: 확률",
-            precipitationHours: "Ore di Precipitazione: 🕒",
-            rain: "Pioggia: ☔",
-            showers: "Rovesci: 🚿",
-            snowfall: "Nevicata: ❄️",
-            windGusts: "Raffiche di Vento: 🌬️",
+            precipitationProbability: "Probabilità di Precipitazioni",
+            precipitationHours: "Ore di Precipitazione",
+            rain: "Pioggia",
+            showers: "Rovesci",
+            snowfall: "Nevicata",
+            windGusts: "Raffiche di Vento",
             privacy: "Privacy",
             terms: "Termini",
             daySelector: {
@@ -77,7 +77,7 @@ const weatherApp = {
             this.cacheDOMElements();
             this.addEventListeners();
             this.prepareTranslations();
-            this.populateDaySelector();
+            this.populateDaySelector('en');
 
             const savedLang = localStorage.getItem('weatherLang') || 'en';
             this.switchLanguage(savedLang);
@@ -139,6 +139,25 @@ const weatherApp = {
         this.dom.gpsButton.addEventListener('click', () => this.useCurrentLocation());
     },
 
+    async fetchWithRetry(url, options, retries = 3, delay = 1000) {
+        for (let i = 0; i < retries; i++) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response;
+            } catch (error) {
+                console.error(`Attempt ${i + 1} failed for ${url}. Retrying in ${delay}ms...`, error);
+                if (i < retries - 1) {
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                } else {
+                    throw error;
+                }
+            }
+        }
+    },
+
     fetchCitySuggestions() {
         const query = this.dom.locationInput.value;
         if (query.length < 3) {
@@ -146,7 +165,7 @@ const weatherApp = {
             return;
         }
 
-        fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`)
+        this.fetchWithRetry(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=5&language=en&format=json`)
             .then(res => res.json())
             .then(data => {
                 this.dom.suggestionsContainer.innerHTML = '';
@@ -168,6 +187,7 @@ const weatherApp = {
     },
 
     prepareTranslations() {
+        this.dom.translatableElements = document.querySelectorAll('[data-translate]');
         this.dom.translatableElements.forEach(el => {
             el.setAttribute('data-original-text', el.textContent);
         });
@@ -241,21 +261,21 @@ const weatherApp = {
         date.setDate(date.getDate() + dayOffset);
         const formattedDate = date.toISOString().split('T')[0];
 
-        fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=it&format=json`)
-            .then(res => res.ok ? res.json() : Promise.reject('Geocoding API error'))
+        this.fetchWithRetry(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=it&format=json`)
+            .then(res => res.json())
             .then(geoData => {
                 if (geoData.results && geoData.results.length > 0) {
                     const { latitude, longitude } = geoData.results[0];
                     const url = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&hourly=temperature_2m,relativehumidity_2m,precipitation_probability,weathercode,surface_pressure,visibility,windspeed_10m,uv_index&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_hours,windspeed_10m_max,windgusts_10m_max,uv_index_max,rain_sum,showers_sum,snowfall_sum&current_weather=true&timezone=auto&start_date=${formattedDate}&end_date=${formattedDate}`;
-                    return fetch(url);
+                    return this.fetchWithRetry(url);
                 }
                 throw new Error('Location not found');
             })
-            .then(res => res.ok ? res.json() : Promise.reject('Weather API error'))
+            .then(res => res.json())
             .then(data => this.updateUI(data, formattedDate))
             .catch(error => {
                 console.error('Error fetching data:', error);
-                this.dom.weatherBanner.textContent = 'Failed to load weather data. Please try again.';
+                this.dom.weatherBanner.textContent = `Failed to load weather data. Error: ${error.message}. Please try again.`;
                 this.dom.weatherBanner.style.backgroundColor = 'red';
             })
             .finally(() => this.hideLoading());
@@ -371,7 +391,7 @@ const weatherApp = {
         document.getElementById('precipitation').textContent = `${hourData.precipitation}%`;
         document.getElementById('humidity').textContent = `${hourData.humidity}%`;
         document.getElementById('uv-index').textContent = hourData.uvIndex.toFixed(1);
-        document.getElementById('visibility').textContent = `${(hourly.visibility[0] / 1000).toFixed(1)} km`;
+        document.getElementById('visibility').textContent = `${(hourData.visibility / 1000).toFixed(1)} km`;
         document.getElementById('pressure').textContent = `${hourData.pressure.toFixed(0)} hPa`;
 
         this.updateBanner(this.getWeatherCondition(hourData.weathercode));
@@ -539,10 +559,10 @@ const weatherApp = {
 
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relativehumidity_2m,precipitation_probability,weathercode,surface_pressure,visibility,windspeed_10m,uv_index&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_hours,windspeed_10m_max,windgusts_10m_max,uv_index_max,rain_sum,showers_sum,snowfall_sum&current_weather=true&timezone=auto&start_date=${formattedDate}&end_date=${formattedDate}`;
 
-        fetch(url)
-            .then(res => res.ok ? res.json() : Promise.reject('Weather API error'))
+        this.fetchWithRetry(url)
+            .then(res => res.json())
             .then(data => {
-                return fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                return this.fetchWithRetry(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
                     .then(res => res.json())
                     .then(geoData => {
                         this.dom.locationInput.value = geoData.address.city || geoData.address.town || geoData.address.village;
