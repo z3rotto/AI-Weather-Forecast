@@ -420,7 +420,11 @@ const weatherApp = {
 
         this.updateBanner(this.getWeatherCondition(current_weather.weathercode));
         this.displayHourlyForecast(hourly);
-        this.updateMainDisplay(new Date().getHours());
+
+        // Get the current hour from the location's timezone, not the user's system
+        const locationTime = new Date(current_weather.time);
+        const locationHour = locationTime.getHours();
+        this.updateMainDisplay(locationHour);
 
         const savedLang = localStorage.getItem('weatherLang') || 'en';
         this.switchLanguage(savedLang);
@@ -457,6 +461,8 @@ const weatherApp = {
         const selectedCard = this.dom.hourlyContainer.querySelector(`[data-hour-index='${hourIndex}']`);
         if(selectedCard) {
             selectedCard.classList.add('active');
+            // Scroll the container to center the active card
+            selectedCard.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
         }
     },
 
