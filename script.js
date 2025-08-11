@@ -303,8 +303,9 @@ const weatherApp = {
         const date = new Date();
         date.setDate(date.getDate() + dayOffset);
         const formattedDate = date.toISOString().split('T')[0];
+        const lang = document.getElementById('lang-en').classList.contains('active') ? 'en' : 'it';
 
-        this.fetchWithRetry(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=it&format=json`)
+        this.fetchWithRetry(`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(location)}&count=1&language=${lang}&format=json`)
             .then(res => res.json())
             .then(geoData => {
                 this.logDebug(`Geocoding data received: ${JSON.stringify(geoData)}`);
