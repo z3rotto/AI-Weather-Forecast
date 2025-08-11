@@ -335,6 +335,10 @@ const weatherApp = {
         this.hourlyData = hourly;
         this.locationData = { latitude: data.latitude, longitude: data.longitude };
 
+        // Day/Night theme switching
+        const isDay = current_weather.is_day === 1;
+        document.body.classList.toggle('night', !isDay);
+
         this.dom.weatherInfoContainer.innerHTML = `
             <div class="weather-item">
                 <span data-translate="date" data-original-text="Date and Time:">Date and Time:</span>
