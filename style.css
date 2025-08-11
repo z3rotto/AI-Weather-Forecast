@@ -181,3 +181,45 @@ body {
 .suggestion-item:hover {
     background-color: #f0f0f0;
 }
+
+/* --- THEME STYLES --- */
+
+/* Default Day Theme Icon Colors */
+#weather-icon .sun {
+    fill: #FFD700; /* Gold */
+    transition: fill 0.5s ease;
+}
+#weather-icon .cloud {
+    stroke: #f0f4f8;
+}
+#weather-icon .rain, #weather-icon .lightning {
+    stroke: var(--accent-color);
+}
+#weather-icon .snow {
+    fill: #f0f4f8;
+}
+
+
+/* Night Theme Overrides */
+body.night {
+    --primary-color: #0d1b2a;
+    --secondary-color: #1b263b;
+    --accent-color: #93c5fd; /* Lighter blue for accent */
+    --text-color: #e0e1dd;
+    --bg-light: rgba(255, 255, 255, 0.08);
+    --bg-hover: rgba(255, 255, 255, 0.15);
+}
+
+body.night .weather-background.sunny {
+    animation-name: night-clear;
+}
+
+@keyframes night-clear {
+    0%, 100% { background: linear-gradient(to bottom, #0d1b2a, #1b263b); }
+    50% { background: linear-gradient(to bottom, #1b263b, #0d1b2a); }
+}
+
+/* Moon style for the sun icon at night */
+body.night #weather-icon .sun {
+    fill: #f0e68c; /* Pale Khaki, for a moon-like color */
+}
